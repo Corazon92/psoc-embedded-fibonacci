@@ -1,77 +1,72 @@
-# Fibonacci sur PSoC 5LP — C embarqué & UART
+# PSoC Embedded Systems
 
-> Projet académique réalisé dans le cadre de la programmation C pour l'embarqué.  
+> Collection de projets pédagogiques autour du **C embarqué, de l'acquisition, du contrôle et de la communication sur PSoC**.  
 > **English version below.**
 
-## 🇫🇷 Présentation
+## 🇫🇷 Vue d'ensemble
 
-Ce projet explore plusieurs notions fondamentales du **C embarqué sur PSoC 5LP** à partir du calcul de la suite de Fibonacci : implémentations itérative et récursive, allocation statique, portée des variables, pile d'appels et communication UART avec un PC.
+Ce dépôt regroupe plusieurs travaux réalisés sur PSoC afin de montrer une progression allant des fondamentaux du C embarqué jusqu'au contrôle de systèmes physiques et à l'IoT.
 
-L'application attend une commande reçue par UART. Lorsque le caractère `F` est saisi, la version itérative est exécutée. Un compteur local `static` compte les appels et un drapeau global déclenche l'envoi des résultats après la 100e exécution.
+| Projet | Sujet | Éléments clés |
+|---|---|---|
+| `uart-fibonacci` | C embarqué & UART | récursivité, `static`, `extern`, pile, UART, retarget `printf/scanf` |
+| `motor-vf-control` | Commande V/f d'une machine asynchrone | ADC, PWM, interruption, six signaux de commande, variation de fréquence |
+| `solar-mppt` | Commande MPPT photovoltaïque | mesures tension/courant, ADC, PWM, calcul de puissance, recherche du MPP |
+| `iot-node-red` | Chaîne IoT PSoC → Node-RED | ADC, UART, JSON, parsing, dashboard |
 
-## Fonctionnalités
+Le projet Fibonacci était auparavant présenté seul. Il reste conservé comme exercice pédagogique, mais cette collection reflète mieux les usages du microcontrôleur : **mesurer, commander et communiquer**.
 
-- Fibonacci **itératif et récursif** ;
-- stockage des résultats dans des tableaux statiques ;
-- comparaison des approches et observation de la pile en debug ;
-- compteur local `static` persistant entre les appels ;
-- partage d'un drapeau global via `extern` ;
-- communication **UART PSoC ↔ PC** ;
-- redirection de `printf` et `scanf` vers l'UART avec `_write` / `_read` ;
-- attente de `UART_1_TX_STS_COMPLETE` avant de poursuivre après l'envoi.
+## 1. UART / Fibonacci
 
-## Organisation
+Projet sur PSoC 5LP utilisant Fibonacci comme support pour étudier le C embarqué : versions itérative et récursive, tableaux statiques, compteur local `static`, variable partagée avec `extern`, observation de la pile et communication UART avec un PC.
 
-```text
-src/
-├── main.c        # Boucle principale, UART et affichage
-├── fonction.c    # Calculs Fibonacci et compteur d'exécutions
-├── fonction.h    # Interface des fonctions et variable externe
-└── utilitaire.c  # Retarget printf/scanf vers l'UART
-```
+Les sources historiques sont conservées dans `src/`.
 
-## Technologies
+## 2. Commande moteur V/f
 
-- **C**
-- **PSoC Creator**
-- **PSoC 5LP**
-- UART
-- types Cypress `uint8`, `uint16`, `uint32`
-- PuTTY pour les essais de liaison série
+Projet PSoC Creator consacré à la génération de commandes PWM pour une machine asynchrone.
 
-## Point intéressant
+Chaîne fonctionnelle :
 
-Le projet ne se limite pas au calcul de Fibonacci : celui-ci sert de support pour observer des problématiques propres à l'embarqué, notamment la différence de comportement mémoire entre une solution itérative et une solution récursive, ainsi que la communication avec un terminal externe.
+`potentiomètre → ADC → interruption → calcul période/rapport → PWM déphasées → commande moteur`
 
-## État
+Le code retrouvé dans l'archive pilote trois blocs PWM et met à jour leurs périodes et comparaisons depuis une mesure ADC. Les valeurs de comparaison créent les déphasages nécessaires aux signaux de commande.
 
-Le dossier `src/` provient du projet PSoC archivé. Les fichiers générés automatiquement par PSoC Creator et les artefacts de compilation ne sont volontairement pas versionnés.
+Les sources applicatives récupérées sont publiées dans `motor-vf-control/src/`. Les fichiers générés automatiquement par PSoC Creator et les artefacts de compilation ne sont pas inclus.
+
+## 3. MPPT photovoltaïque
+
+Travail réalisé avec un PSoC autour du suivi du point de puissance maximale d'un panneau photovoltaïque.
+
+Chaîne étudiée :
+
+`panneau PV → mesure tension/courant → conditionnement → ADC → calcul puissance → commande MPPT → PWM`
+
+Le projet archivé confirme l'utilisation de deux ADC, d'un conditionnement analogique, d'une PWM et d'une logique de recherche du point de puissance maximale documentée dans le compte rendu.
+
+**Transparence :** l'archive PSoC retrouvée contient bien le projet et des sources applicatives, mais la version de `fonction.c` conservée dans cette archive ne contient que l'initialisation des composants. L'algorithme MPPT détaillé dans le rapport n'est donc pas reconstruit artificiellement dans ce dépôt.
+
+## 4. PSoC + Node-RED
+
+Mini-projet IoT reliant un PSoC à Node-RED :
+
+`potentiomètre → ADC PSoC → UART → JSON → Node-RED → parsing → graphique/jauge`
+
+Le travail a évolué d'une valeur série brute vers une trame JSON, puis vers le transport de plusieurs valeurs dans une même trame. Cette partie est documentée à partir du TP archivé ; elle sert surtout à illustrer le lien entre embarqué, communication et visualisation de données.
+
+## Sécurité et nettoyage
+
+Les chemins locaux, logs de compilation et fichiers générés par PSoC Creator ne sont pas publiés. Le dépôt privilégie les sources applicatives et une documentation fidèle aux archives.
 
 ---
 
-# 🇬🇧 Fibonacci on PSoC 5LP — Embedded C & UART
+# 🇬🇧 PSoC Embedded Systems
 
-## Overview
+This repository groups several educational PSoC projects covering **embedded C, data acquisition, control and communication**.
 
-Academic embedded-C project built on a **PSoC 5LP**. Fibonacci is used as a practical case to explore iterative and recursive algorithms, static storage, variable scope, call-stack behavior and UART communication with a PC.
+- **UART / Fibonacci:** recursion, static storage, call stack and UART communication.
+- **Motor V/f control:** ADC-driven PWM generation and phase-shifted control signals for an induction-motor exercise.
+- **Solar MPPT:** voltage/current acquisition, analog conditioning, PWM and maximum-power-point tracking study.
+- **PSoC + Node-RED:** ADC data sent over UART as JSON and displayed in a Node-RED dashboard.
 
-The application receives commands through UART. When `F` is entered, the iterative implementation runs. A local `static` counter tracks calls and a shared flag triggers result transmission after the 100th execution.
-
-## Features
-
-- iterative and recursive Fibonacci implementations;
-- statically allocated result arrays;
-- call-stack observation during debugging;
-- persistent local `static` counter;
-- global flag shared with `extern`;
-- PSoC-to-PC UART communication;
-- `printf` / `scanf` retargeting through `_write` and `_read`;
-- UART transmission-complete status handling.
-
-## Technologies
-
-**C · PSoC Creator · PSoC 5LP · UART · PuTTY**
-
-## Repository
-
-The `src/` directory contains the archived application source code. Generated PSoC Creator files and build artifacts are intentionally excluded to keep the repository focused on the implementation.
+The repository intentionally keeps the historical student code authentic. Generated PSoC Creator sources, build outputs and machine-specific paths are excluded. When an archived source is incomplete, the documentation says so instead of reconstructing code and presenting it as original.
